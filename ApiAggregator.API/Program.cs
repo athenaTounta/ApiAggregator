@@ -1,8 +1,17 @@
+
+using System.Text.Json.Serialization;
+using ApiAggregator.Infrastructure.Extensions;
+using ApiAggregator.Application.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters
+        .Add(new JsonStringEnumConverter());
+});
 
-builder.Services.AddControllers();
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure();
 
 var app = builder.Build();
 
