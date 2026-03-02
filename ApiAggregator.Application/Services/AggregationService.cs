@@ -20,14 +20,14 @@ namespace ApiAggregator.Application.Services
             var servicesTasks = _externalApiServices.Select(service => service.GetAsync());
             var results = await Task.WhenAll(servicesTasks);
             var failedErrors = results
-    .Where(r => r.IsFailed)
-    .SelectMany(r => r.Errors)
-    .Select(e => e.Message)
-    .ToList();
+                .Where(r => r.IsFailed)
+                  .SelectMany(r => r.Errors)
+                .Select(e => e.Message)
+                .ToList();
             var aggregationItems = results
-     .Where(r => r.IsSuccess)
-     .SelectMany(r => r.Value ?? Enumerable.Empty<AggregationItem>())
-     .ToList();
+                 .Where(r => r.IsSuccess)
+                   .SelectMany(r => r.Value ?? Enumerable.Empty<AggregationItem>())
+               .ToList();
             return Result.Ok(new AggregationDataResponse
             {
                 AggregationItems = aggregationItems,

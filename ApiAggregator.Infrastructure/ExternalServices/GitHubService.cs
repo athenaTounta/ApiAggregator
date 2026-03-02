@@ -13,11 +13,12 @@ public class GitHubService : IExternalApiService
 {
     private readonly HttpClient _httpClient;
     private readonly string _baseUrl;
-
-    public GitHubService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+    private readonly JsonSerializerOptions _jsonOptions;
+    public GitHubService(IHttpClientFactory httpClientFactory, IConfiguration configuration, JsonSerializerOptions jsonOptions)
     {
         _httpClient = httpClientFactory.CreateClient("ApiAggregator");
         _baseUrl = configuration.GetSection("ExternalApis:GitHub")["BaseUrl"]!;
+        _jsonOptions = jsonOptions;
     }
 
     public async Task<Result<IEnumerable<AggregationItem>>> GetAsync()
@@ -27,10 +28,7 @@ public class GitHubService : IExternalApiService
             var url = $"{_baseUrl}/search/repositories?q=dotnet&sort=stars";
             var json = await _httpClient.GetStringAsync(url);
 
-            var result = JsonSerializer.Deserialize<GitHubResponse>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var result = JsonSerializer.Deserialize<GitHubResponse>(json, _jsonOptions);
 
             if (result is null || result.Items is null)
                 return Result.Fail("GitHub API returned null response");

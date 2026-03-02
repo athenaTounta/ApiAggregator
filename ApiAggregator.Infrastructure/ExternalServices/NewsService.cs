@@ -14,13 +14,15 @@ namespace ApiAggregator.Infrastructure.ExternalClients
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
         private readonly string _baseUrl;
+        private readonly JsonSerializerOptions _jsonOptions;
 
-        public NewsService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public NewsService(IHttpClientFactory httpClientFactory, IConfiguration configuration, JsonSerializerOptions jsonOptions)
         {
             _httpClient = httpClientFactory.CreateClient("ApiAggregator");
             var news = configuration.GetSection("ExternalApis:News");
             _apiKey = news["ApiKey"]!;
             _baseUrl = news["BaseUrl"]!;
+            _jsonOptions = jsonOptions;
         }
 
         public async Task<Result<IEnumerable<AggregationItem>>> GetAsync()
@@ -29,10 +31,7 @@ namespace ApiAggregator.Infrastructure.ExternalClients
             {
                 var url = $"{_baseUrl}/top-headlines?country=us&apiKey={_apiKey}";
                 var json = await _httpClient.GetStringAsync(url);
-                var result = JsonSerializer.Deserialize<NewsResponse>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var result = JsonSerializer.Deserialize<NewsResponse>(json, _jsonOptions);
                 if (result is null || result.Articles is null)
                 {
                     return Result.Fail("News api result is null");

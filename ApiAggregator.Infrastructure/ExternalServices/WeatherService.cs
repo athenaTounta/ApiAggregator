@@ -15,14 +15,15 @@ namespace ApiAggregator.Infrastructure.ExternalClients
         private readonly string _apiKey;
         private readonly string _city;
         private readonly string _baseUrl;
-
-        public WeatherService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        private readonly JsonSerializerOptions _jsonOptions;
+        public WeatherService(IHttpClientFactory httpClientFactory, IConfiguration configuration, JsonSerializerOptions jsonOptions)
         {
             _httpClient = httpClientFactory.CreateClient("ApiAggregator");
             var weather = configuration.GetSection("ExternalApis:OpenWeather");
             _apiKey = weather["ApiKey"]!;
             _city = weather["City"]!;
             _baseUrl = weather["BaseUrl"]!;
+            _jsonOptions = jsonOptions;
         }
 
         public async Task<Result<IEnumerable<AggregationItem>>> GetAsync()
@@ -31,10 +32,7 @@ namespace ApiAggregator.Infrastructure.ExternalClients
             {
                 var url = $"{_baseUrl}/weather?q={_city}&units=metric&appid={_apiKey}";
                 var json = await _httpClient.GetStringAsync(url);
-                var result = JsonSerializer.Deserialize<WeatherResponse>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var result = JsonSerializer.Deserialize<WeatherResponse>(json, _jsonOptions);
                 if (result is null)
                 {
                     return Result.Fail("Weather api result is null");
