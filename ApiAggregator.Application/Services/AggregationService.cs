@@ -30,6 +30,13 @@ namespace ApiAggregator.Application.Services
                  .Where(r => r.IsSuccess)
                    .SelectMany(r => r.Value ?? Enumerable.Empty<AggregationItem>())
                .ToList();
+
+            if (aggregationItems.Count == 0 && failedErrors.Count > 0)
+            {
+                return Result.Fail("All apis failed")
+                    .WithErrors(failedErrors);
+            }
+
             var query = aggregationItems.AsQueryable();
 
             if (parameters is not null)

@@ -24,7 +24,13 @@ public class AggregationServiceDecorator : IAggregationService
 
     public async Task<Result<AggregationDataResponse>> GetDataAsync(QueryParameters? parameters = null)
     {
-        var cacheKey = $"aggregated_{parameters?.Category}_{parameters?.SortBy}_{parameters?.Order}";
+        var category = parameters?.Category ?? "all";
+        var sortBy = parameters?.SortBy ?? "none";
+        var order = parameters?.Order?.ToString() ?? "none";
+
+        var cacheKey = $"aggregated_{category}_{sortBy}_{order}";
+        var staleCacheKey = $"stale_{cacheKey}";
+
         if (_cache.TryGet<AggregationDataResponse>(cacheKey, out var cached))
         {
             _logger.LogInformation("Cache returning cached data");
@@ -36,7 +42,14 @@ public class AggregationServiceDecorator : IAggregationService
 
         if (result.IsSuccess)
         {
-            _cache.Set(cacheKey, result.Value);
+            _cache.Set(cacheKey, result.Value, TimeSpan.FromMinutes(5));
+            _cache.Set(staleCacheKey, result.Value, TimeSpan.FromMinutes(30));
+        }
+
+        if (_cache.TryGet<AggregationDataResponse>(staleCacheKey, out var staleData))
+        {
+            _logger.LogWarning("Returning stale cached data ");
+            return Result.Ok(staleData);
         }
 
         return result;

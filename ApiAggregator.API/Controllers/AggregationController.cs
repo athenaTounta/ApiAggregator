@@ -19,6 +19,14 @@ namespace ApiAggregator.API.Controllers
         {
             var result = await _aggregationService.GetDataAsync(parameters);
 
+            if (result.IsFailed)
+            {
+                return BadRequest(new
+                {
+                    Errors = result.Errors.Select(e => e.Message)
+                });
+            }
+
             return Ok(result.Value);
         }
     }
