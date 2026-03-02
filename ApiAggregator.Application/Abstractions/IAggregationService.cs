@@ -1,9 +1,10 @@
 ﻿using ApiAggregator.Domain.DTOs.Responses;
+using FluentResults;
 
 namespace ApiAggregator.Application.Abstractions
 {
     public interface IAggregationService
     {
-        Task<AggregationDataResponse> GetDataAsync();
+        Task<Result<AggregationDataResponse>> GetDataAsync();
     }
 }

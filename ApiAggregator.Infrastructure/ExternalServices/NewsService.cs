@@ -2,7 +2,9 @@
 using ApiAggregator.Application.Abstractions;
 using ApiAggregator.Domain.Enums;
 using ApiAggregator.Domain.Models;
+using FluentResults;
 using Microsoft.Extensions.Configuration;
+using System.Net;
 using System.Text.Json;
 
 namespace ApiAggregator.Infrastructure.ExternalClients
@@ -21,28 +23,48 @@ namespace ApiAggregator.Infrastructure.ExternalClients
             _baseUrl = news["BaseUrl"]!;
         }
 
-        public async Task<IEnumerable<AggregationItem>> GetAsync()
+        public async Task<Result<IEnumerable<AggregationItem>>> GetAsync()
         {
-            var url = $"{_baseUrl}/top-headlines?country=us&apiKey={_apiKey}";
-            var json = await _httpClient.GetStringAsync(url);
-            var result = JsonSerializer.Deserialize<NewsResponse>(json, new JsonSerializerOptions
+            try
             {
-                PropertyNameCaseInsensitive = true
-            });
-            if (result is null || result.Articles is null)
-            {
-                throw new InvalidOperationException("response is null");
-            }
-            return result.Articles
-                .Where(a => a.Title != null)
-                .Select(a => new AggregationItem
+                var url = $"{_baseUrl}/top-headlines?country=us&apiKey={_apiKey}";
+                var json = await _httpClient.GetStringAsync(url);
+                var result = JsonSerializer.Deserialize<NewsResponse>(json, new JsonSerializerOptions
                 {
-                    Title = a.Title!,
-                    Description = a.Description ?? "No description available",
-                    Url = a.Url,
-                    Date = a.PublishedAt,
-                    Category = ApiCategory.News
+                    PropertyNameCaseInsensitive = true
                 });
+                if (result is null || result.Articles is null)
+                {
+                    return Result.Fail("News api result is null");
+                }
+                return Result.Ok<IEnumerable<AggregationItem>>(
+                result.Articles
+                 .Where(a => a.Title != null)
+                 .Select(a => new AggregationItem
+                 {
+                     Title = a.Title!,
+                     Description = a.Description ?? "No description available",
+                     Url = a.Url,
+                     Date = a.PublishedAt,
+                     Category = ApiCategory.News
+                 }));
+            }
+            catch (HttpRequestException ex)
+            {
+                var message = ex.StatusCode switch
+                {
+                    HttpStatusCode.Unauthorized => "Unauthorized access to news API ",
+                    HttpStatusCode.Forbidden => "News API access denied",
+                    HttpStatusCode.TooManyRequests => "News API rate limit exceeded",
+                    HttpStatusCode.ServiceUnavailable => "News API is down",
+                    _ => $"News API failed: {ex.Message}"
+                };
+                return Result.Fail(message);
+            }
+            catch (JsonException ex)
+            {
+                return Result.Fail($"News API deserialization failed: {ex.Message}");
+            }
         }
     }
 }

@@ -2,8 +2,9 @@
 using ApiAggregator.Application.Abstractions;
 using ApiAggregator.Domain.Enums;
 using ApiAggregator.Domain.Models;
+using FluentResults;
 using Microsoft.Extensions.Configuration;
-using System.Net.Http;
+using System.Net;
 using System.Text.Json;
 
 namespace ApiAggregator.Infrastructure.ExternalClients
@@ -14,6 +15,7 @@ namespace ApiAggregator.Infrastructure.ExternalClients
         private readonly string _apiKey;
         private readonly string _city;
         private readonly string _baseUrl;
+
         public WeatherService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _httpClient = httpClientFactory.CreateClient("ApiAggregator");
@@ -22,22 +24,24 @@ namespace ApiAggregator.Infrastructure.ExternalClients
             _city = weather["City"]!;
             _baseUrl = weather["BaseUrl"]!;
         }
-        //todo error handling: 1.problem with serialization 2.api down 3.no-key etc -->if rate limiting
-        public async Task<IEnumerable<AggregationItem>> GetAsync()
+
+        public async Task<Result<IEnumerable<AggregationItem>>> GetAsync()
         {
-            var url = $"{_baseUrl}/weather?q={_city}&units=metric&appid={_apiKey}";
-            var json = await _httpClient.GetStringAsync(url);
-            var result = JsonSerializer.Deserialize<WeatherResponse>(json, new JsonSerializerOptions
+            try
             {
-                PropertyNameCaseInsensitive = true
-            });
-            if (result is null)
-            {
-                throw new InvalidOperationException("response is null");
-            }
-            return
-            [
-                new AggregationItem
+                var url = $"{_baseUrl}/weather?q={_city}&units=metric&appid={_apiKey}";
+                var json = await _httpClient.GetStringAsync(url);
+                var result = JsonSerializer.Deserialize<WeatherResponse>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                if (result is null)
+                {
+                    return Result.Fail("Weather api result is null");
+                }
+                return Result.Ok<IEnumerable<AggregationItem>>(
+                [
+                    new AggregationItem
             {
                 Title = $"{result.Name} - {result.Weather?[0].Main}",
                 Description = $"Temperature: {result.Main?.Temp}°C, Feels like: {result.Main?.FeelsLike}°C, Humidity: {result.Main?.Humidity}%",
@@ -45,7 +49,24 @@ namespace ApiAggregator.Infrastructure.ExternalClients
                 Date = DateTimeOffset.FromUnixTimeSeconds(result.Dt).UtcDateTime,
                 Category = ApiCategory.Weather
             }
-            ];
+                ]);
+            }
+            catch (HttpRequestException ex)
+            {
+                var message = ex.StatusCode switch
+                {
+                    HttpStatusCode.Unauthorized => "Unauthorized access to weather API ",
+                    HttpStatusCode.Forbidden => "News API access denied",
+                    HttpStatusCode.TooManyRequests => "Weather API rate limit exceeded",
+                    HttpStatusCode.ServiceUnavailable => "Weather API is down",
+                    _ => $"Weather API failed: {ex.Message}"
+                };
+                return Result.Fail(message);
+            }
+            catch (JsonException ex)
+            {
+                return Result.Fail($"Weather API deserialization failed: {ex.Message}");
+            }
         }
     }
 }

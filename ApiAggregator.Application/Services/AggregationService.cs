@@ -1,6 +1,8 @@
 ﻿
 using ApiAggregator.Application.Abstractions;
 using ApiAggregator.Domain.DTOs.Responses;
+using ApiAggregator.Domain.Models;
+using FluentResults;
 
 namespace ApiAggregator.Application.Services
 {
@@ -13,16 +15,19 @@ namespace ApiAggregator.Application.Services
             _externalApiServices = externalApiServices;
         }
 
-        public async Task<AggregationDataResponse> GetDataAsync()
+        public async Task<Result<AggregationDataResponse>> GetDataAsync()
         {
             var servicesTasks = _externalApiServices.Select(service => service.GetAsync());
             var results = await Task.WhenAll(servicesTasks);
-            var aggregationItems = results.SelectMany(result => result).ToList();
-            return new AggregationDataResponse
+            var aggregationItems = results
+     .Where(r => r.IsSuccess)
+     .SelectMany(r => r.Value ?? Enumerable.Empty<AggregationItem>())
+     .ToList();
+            return Result.Ok(new AggregationDataResponse
             {
                 AggregationItems = aggregationItems,
                 TotalCount = aggregationItems.Count
-            };
+            });
         }
     }
 }
