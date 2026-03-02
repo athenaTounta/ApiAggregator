@@ -17,7 +17,8 @@ namespace ApiAggregator.API.Controllers
         public async Task<IActionResult> GetAggregationData()
         {
             var result = await _aggregationService.GetDataAsync();
-            return Ok(result);
+
+            return Ok(result.Value);
         }
     }
 }
