@@ -26,7 +26,6 @@ namespace ApiAggregator.API
                 Exception = exception,
                 ProblemDetails = new ProblemDetails
                 {
-                    Type = exception.GetType().Name,
                     Title = "An error occured",
                     Detail = exception.Message
                 }

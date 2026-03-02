@@ -1,13 +1,12 @@
 ﻿
 using ApiAggregator.Application.Abstractions;
-using ApiAggregator.Domain.Enums;
 using ApiAggregator.Domain.Models;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Text.Json;
 
-namespace ApiAggregator.Infrastructure.ExternalClients
+namespace ApiAggregator.Infrastructure.ExternalServices
 {
     public class WeatherService : IExternalApiService
     {

@@ -1,7 +1,7 @@
 ﻿
 using ApiAggregator.Application.Abstractions;
 using ApiAggregator.Infrastructure.Caching;
-using ApiAggregator.Infrastructure.ExternalClients;
+using ApiAggregator.Infrastructure.ExternalServices;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 
@@ -14,6 +14,7 @@ namespace ApiAggregator.Infrastructure.Extensions
         /// 3 attempts with exponential backoff (2s, 4s, 8s) + jitter
         /// 30s for entire request including retries
         /// 10s timeout for each attempt
+        /// next to do different policies for different services
         /// </summary>
         public static IServiceCollection AddInfrastructure(
             this IServiceCollection services)

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Text.Json;
 
-namespace ApiAggregator.Infrastructure.ExternalClients
+namespace ApiAggregator.Infrastructure.ExternalServices
 {
     public class NewsService : IExternalApiService
     {
