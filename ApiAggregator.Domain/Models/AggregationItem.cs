@@ -9,6 +9,6 @@ namespace ApiAggregator.Domain.Models
         public string? Url { get; init; }
         public DateTime Date { get; init; }
 
-        public ApiCategory Category { get; init; }
+        public string Category { get; init; } = String.Empty;
     }
 }

@@ -1,5 +1,5 @@
 
-using ApiAggregator.API.Middleware;
+using ApiAggregator.API;
 using ApiAggregator.Application.Extensions;
 using ApiAggregator.Infrastructure.Extensions;
 using System.Text.Json.Serialization;

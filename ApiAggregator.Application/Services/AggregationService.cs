@@ -1,6 +1,8 @@
 ﻿
 using ApiAggregator.Application.Abstractions;
+using ApiAggregator.Domain.DTOs.Requests;
 using ApiAggregator.Domain.DTOs.Responses;
+using ApiAggregator.Domain.Enums;
 using ApiAggregator.Domain.Models;
 using FluentResults;
 
@@ -15,7 +17,7 @@ namespace ApiAggregator.Application.Services
             _externalApiServices = externalApiServices;
         }
 
-        public async Task<Result<AggregationDataResponse>> GetDataAsync()
+        public async Task<Result<AggregationDataResponse>> GetDataAsync(QueryParameters? parameters = null)
         {
             var servicesTasks = _externalApiServices.Select(service => service.GetAsync());
             var results = await Task.WhenAll(servicesTasks);
@@ -28,12 +30,48 @@ namespace ApiAggregator.Application.Services
                  .Where(r => r.IsSuccess)
                    .SelectMany(r => r.Value ?? Enumerable.Empty<AggregationItem>())
                .ToList();
+            var query = aggregationItems.AsQueryable();
+
+            if (parameters is not null)
+            {
+                query = ApplyFilters(query, parameters);
+                query = ApplySorting(query, parameters);
+            }
+
+            var items = query.ToList();
+
             return Result.Ok(new AggregationDataResponse
             {
-                AggregationItems = aggregationItems,
-                TotalCount = aggregationItems.Count,
+                AggregationItems = items,
+                TotalCount = items.Count,
                 Errors = failedErrors
             });
+
+        }
+        private static IQueryable<AggregationItem> ApplyFilters(IQueryable<AggregationItem> query, QueryParameters parameters)
+        {
+            if (!string.IsNullOrEmpty(parameters.Category))
+                query = query.Where(i => i.Category.Equals(parameters.Category, StringComparison.OrdinalIgnoreCase));
+
+            return query;
+        }
+
+        private static IQueryable<AggregationItem> ApplySorting(IQueryable<AggregationItem> query, QueryParameters parameters)
+        {
+            if (string.IsNullOrEmpty(parameters.SortBy))
+                return query;
+
+            return parameters.SortBy.ToLower() switch
+            {
+                "date" => parameters.Order == SortOrder.Desc
+                    ? query.OrderByDescending(i => i.Date)
+                    : query.OrderBy(i => i.Date),
+                "title" => parameters.Order == SortOrder.Desc
+                    ? query.OrderByDescending(i => i.Title)
+                    : query.OrderBy(i => i.Title),
+                _ => query
+            };
         }
     }
 }
+

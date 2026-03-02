@@ -45,7 +45,7 @@ namespace ApiAggregator.Infrastructure.ExternalClients
                 Description = $"Temperature: {result.Main?.Temp}°C, Feels like: {result.Main?.FeelsLike}°C, Humidity: {result.Main?.Humidity}%",
                 Url = null,
                 Date = DateTimeOffset.FromUnixTimeSeconds(result.Dt).UtcDateTime,
-                Category = ApiCategory.Weather
+                Category = "Weather"
             }
                 ]);
             }
@@ -54,7 +54,7 @@ namespace ApiAggregator.Infrastructure.ExternalClients
                 var message = ex.StatusCode switch
                 {
                     HttpStatusCode.Unauthorized => "Unauthorized access to weather API ",
-                    HttpStatusCode.Forbidden => "News API access denied",
+                    HttpStatusCode.Forbidden => "Weather API access denied",
                     HttpStatusCode.TooManyRequests => "Weather API rate limit exceeded",
                     HttpStatusCode.ServiceUnavailable => "Weather API is down",
                     _ => $"Weather API failed: {ex.Message}"

@@ -1,5 +1,4 @@
 ﻿using ApiAggregator.Application.Abstractions;
-using ApiAggregator.Domain.Enums;
 using ApiAggregator.Domain.Models;
 using ApiAggregator.Infrastructure.Responses;
 using FluentResults;
@@ -40,7 +39,7 @@ public class GitHubService : IExternalApiService
                     Description = r.Description ?? "No description available",
                     Url = r.HtmlUrl,
                     Date = r.UpdatedAt,
-                    Category = ApiCategory.GitHub
+                    Category = "GitHub"
                 }));
         }
         catch (HttpRequestException ex)

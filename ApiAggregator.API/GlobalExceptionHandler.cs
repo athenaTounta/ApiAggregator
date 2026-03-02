@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ApiAggregator.API.Middleware
+namespace ApiAggregator.API
 {
     internal sealed class GlobalExceptionHandler(
       IProblemDetailsService problemDetailsService,

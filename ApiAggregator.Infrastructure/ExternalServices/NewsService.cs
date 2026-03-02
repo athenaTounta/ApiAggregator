@@ -45,7 +45,7 @@ namespace ApiAggregator.Infrastructure.ExternalClients
                      Description = a.Description ?? "No description available",
                      Url = a.Url,
                      Date = a.PublishedAt,
-                     Category = ApiCategory.News
+                     Category = "News"
                  }));
             }
             catch (HttpRequestException ex)
