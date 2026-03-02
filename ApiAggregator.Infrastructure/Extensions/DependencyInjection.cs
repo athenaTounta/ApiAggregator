@@ -1,8 +1,8 @@
 ﻿
 using ApiAggregator.Application.Abstractions;
+using ApiAggregator.Infrastructure.Caching;
 using ApiAggregator.Infrastructure.ExternalClients;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Resilience;
 using System.Text.Json;
 
 namespace ApiAggregator.Infrastructure.Extensions
@@ -18,6 +18,9 @@ namespace ApiAggregator.Infrastructure.Extensions
         public static IServiceCollection AddInfrastructure(
             this IServiceCollection services)
         {
+            services.AddMemoryCache();
+            services.AddSingleton<ICacheService, CacheService>();
+
             services.AddSingleton(new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
