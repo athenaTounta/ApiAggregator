@@ -11,6 +11,18 @@ builder.Services.AddControllers().AddJsonOptions(options =>
         .Add(new JsonStringEnumConverter());
 });
 
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Api Aggregator API",
+        Version = "v1",
+        Description = "Aggregates data from Weather, News, and GitHub APIs with caching and resilience"
+    });
+});
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 
@@ -20,6 +32,12 @@ builder.Services.AddProblemDetails();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
 app.UseExceptionHandler();
 
 app.UseHttpsRedirection();

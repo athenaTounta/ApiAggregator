@@ -12,6 +12,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Swashbuckle.AspNetCore" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Folder Include="Middleware\" />
 	</ItemGroup>
 
