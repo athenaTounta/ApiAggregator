@@ -18,8 +18,8 @@
 		<PackageReference Include="xunit.runner.visualstudio" />
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\ApiAggregator.Application\ApiAggregator.Application.csproj" />
-		<ProjectReference Include="..\ApiAggregator.Domain\ApiAggregator.Domain.csproj" />
+		<ProjectReference Include="..\..\src\ApiAggregator.Application\ApiAggregator.Application.csproj" />
+		<ProjectReference Include="..\..\src\ApiAggregator.Domain\ApiAggregator.Domain.csproj" />
 	</ItemGroup>
 
 </Project>
