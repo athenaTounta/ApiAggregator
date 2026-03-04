@@ -42,7 +42,7 @@ public class AggregationServiceDecorator : IAggregationService
 
         if (result.IsSuccess)
         {
-            _cache.Set(cacheKey, result.Value, TimeSpan.FromMinutes(5));
+            _cache.Set(cacheKey, result.Value, TimeSpan.FromMinutes(10));
             _cache.Set(staleCacheKey, result.Value, TimeSpan.FromMinutes(30));
         }
 

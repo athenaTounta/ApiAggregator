@@ -1,6 +1,7 @@
 ﻿
 using ApiAggregator.Application.Abstractions;
 using ApiAggregator.Infrastructure.Caching;
+using ApiAggregator.Infrastructure.Decorators;
 using ApiAggregator.Infrastructure.ExternalServices;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
@@ -36,6 +37,7 @@ namespace ApiAggregator.Infrastructure.Extensions
             services.AddScoped<IExternalApiService, WeatherService>();
             services.AddScoped<IExternalApiService, NewsService>();
             services.AddScoped<IExternalApiService, GitHubService>();
+            services.Decorate<IExternalApiService, ExternalApiServiceDecorator>();
             return services;
         }
     }
