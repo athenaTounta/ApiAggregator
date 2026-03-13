@@ -44,6 +44,7 @@ public class AggregationServiceDecorator : IAggregationService
         {
             _cache.Set(cacheKey, result.Value, TimeSpan.FromMinutes(10));
             _cache.Set(staleCacheKey, result.Value, TimeSpan.FromMinutes(30));
+            return result;
         }
 
         if (_cache.TryGet<AggregationDataResponse>(staleCacheKey, out var staleData))

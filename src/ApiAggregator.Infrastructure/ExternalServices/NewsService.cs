@@ -1,6 +1,5 @@
 ﻿
 using ApiAggregator.Application.Abstractions;
-using ApiAggregator.Domain.Enums;
 using ApiAggregator.Domain.Models;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
